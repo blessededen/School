@@ -52,71 +52,81 @@ function buildChips() {
 }
 
 function drawDual() {
-  const c = DATA.closure;
-  const t = DATA.teacher;
-  const p = DATA.population;
-  const sido = SELECTED_SIDO;
+  try {
+    const c = DATA.closure;
+    const t = DATA.teacher;
+    const p = DATA.population;
+    const sido = SELECTED_SIDO;
 
-  // 공통 시간축: 인구 데이터 범위
-  const years = p.years;
-  const closeArr = years.map(y => {
-    const yi = c.years.indexOf(y);
-    return yi >= 0 ? c.yearly[sido][yi] : 0;
-  });
-  const popArr = p.population[sido] || [];
-  const hires = years.map(y => {
-    const ti = t.years.indexOf(y);
-    return ti >= 0 ? t.new_hires[sido][ti] : null;
-  });
+    const years = p.years;
+    const closeArr = years.map(y => {
+      const yi = c.years.indexOf(y);
+      return yi >= 0 ? c.yearly[sido][yi] : 0;
+    });
+    const popArr = p.population[sido] || [];
+    const hires = years.map(y => {
+      const ti = t.years.indexOf(y);
+      return ti >= 0 ? t.new_hires[sido][ti] : null;
+    });
 
-  const traces = [
-    {
-      x: years, y: closeArr,
-      name: '폐교(연간)', type: 'bar',
-      marker: {
-        color: 'rgba(255,107,157,0.7)',
-        line: { color: 'rgba(255,107,157,0.9)', width: 1 },
+    // 3개 서브플롯 — 각자 독립 Y축. 오버레이 트릭 안 씀 → 안전
+    const traces = [
+      {
+        x: years, y: closeArr,
+        name: '폐교(연간)', type: 'bar',
+        marker: { color: 'rgba(255,107,157,0.75)' },
+        xaxis: 'x', yaxis: 'y',
+        hovertemplate: '<b>%{x}년</b> 폐교 %{y}교<extra></extra>',
       },
-      yaxis: 'y',
-      hovertemplate: '<b>%{x}년</b> 폐교 %{y}교<extra></extra>',
-    },
-    {
-      x: years, y: popArr,
-      name: '인구 (KOSIS)', type: 'scatter', mode: 'lines+markers',
-      line: { color: '#5eead4', width: 3, shape: 'spline' },
-      marker: { size: 6, color: '#5eead4' },
-      yaxis: 'y2',
-      hovertemplate: '<b>%{x}년</b> 인구 %{y:,}명<extra></extra>',
-    },
-    {
-      x: years, y: hires,
-      name: '신규 임용 (추정)', type: 'scatter', mode: 'lines+markers',
-      line: { color: '#ffd166', width: 2, dash: 'dot' },
-      marker: { size: 5, color: '#ffd166' },
-      yaxis: 'y3',
-      hovertemplate: '<b>%{x}년</b> 임용 %{y}명<extra></extra>',
-    },
-  ];
+      {
+        x: years, y: popArr,
+        name: '인구 (KOSIS 실데이터)', type: 'scatter', mode: 'lines+markers',
+        line: { color: '#5eead4', width: 3, shape: 'spline' },
+        marker: { size: 6, color: '#5eead4' },
+        fill: 'tozeroy', fillcolor: 'rgba(94,234,212,0.08)',
+        xaxis: 'x2', yaxis: 'y2',
+        hovertemplate: '<b>%{x}년</b> 인구 %{y:,}명<extra></extra>',
+      },
+      {
+        x: years, y: hires,
+        name: '신규 임용 (추정)', type: 'scatter', mode: 'lines+markers',
+        line: { color: '#ffd166', width: 2, dash: 'dot' },
+        marker: { size: 5, color: '#ffd166' },
+        xaxis: 'x3', yaxis: 'y3',
+        hovertemplate: '<b>%{x}년</b> 임용 %{y}명<extra></extra>',
+      },
+    ];
 
-  const layout = {
-    ...LAYOUT_DARK,
-    title: { text: `${sido}`, font: { size: 14, color: '#5eead4' }, x: 0.02 },
-    yaxis: { ...LAYOUT_DARK.yaxis, title: { text: '폐교 수', font: { color: '#ff6b9d' } }, side: 'left' },
-    yaxis2: {
-      title: { text: '인구', font: { color: '#5eead4' } },
-      overlaying: 'y', side: 'right',
-      gridcolor: 'transparent', tickfont: { color: '#5eead4' },
-    },
-    yaxis3: {
-      overlaying: 'y', side: 'right', position: 0.96,
-      showgrid: false, tickfont: { color: '#ffd166', size: 10 },
-    },
-  };
+    const layout = {
+      ...LAYOUT_DARK,
+      title: { text: `${sido}`, font: { size: 14, color: '#5eead4' }, x: 0.02 },
+      grid: { rows: 3, columns: 1, pattern: 'independent', roworder: 'top to bottom' },
+      xaxis:  { ...LAYOUT_DARK.xaxis, matches: 'x3', showticklabels: false },
+      xaxis2: { ...LAYOUT_DARK.xaxis, matches: 'x3', showticklabels: false },
+      xaxis3: { ...LAYOUT_DARK.xaxis },
+      yaxis:  { ...LAYOUT_DARK.yaxis, title: { text: '폐교', font: { color: '#ff6b9d', size: 11 } } },
+      yaxis2: { ...LAYOUT_DARK.yaxis, title: { text: '인구', font: { color: '#5eead4', size: 11 } } },
+      yaxis3: { ...LAYOUT_DARK.yaxis, title: { text: '임용(추정)', font: { color: '#ffd166', size: 11 } } },
+      margin: { l: 70, r: 20, t: 36, b: 40 },
+    };
 
-  Plotly.newPlot('chart-dual', traces, layout, CONFIG);
+    Plotly.newPlot('chart-dual', traces, layout, CONFIG);
+  } catch (e) {
+    console.error('drawDual failed:', e);
+    const el = document.getElementById('chart-dual');
+    if (el) el.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-faint);">차트 렌더링 실패: ${e.message}</div>`;
+  }
 }
 
 function drawScatter() {
+  try { _drawScatter(); }
+  catch (e) {
+    console.error('drawScatter failed:', e);
+    const el = document.getElementById('chart-scatter');
+    if (el) el.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-faint);">${e.message}</div>`;
+  }
+}
+function _drawScatter() {
   const c = DATA.closure;
   const p = DATA.population;
   const points = c.sido.map(s => {
@@ -155,6 +165,14 @@ function drawScatter() {
 }
 
 function drawDensity() {
+  try { _drawDensity(); }
+  catch (e) {
+    console.error('drawDensity failed:', e);
+    const el = document.getElementById('chart-density');
+    if (el) el.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-faint);">${e.message}</div>`;
+  }
+}
+function _drawDensity() {
   const c = DATA.closure;
   const p = DATA.population;
   const rows = c.sido.map(s => {

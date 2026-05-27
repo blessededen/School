@@ -672,11 +672,12 @@ table.data tr:hover td {
 }
 
 /* ── Reveal on scroll ───────────────────────────────────────── */
-.reveal {
+/* .panel은 이미 fadeUp 애니메이션이 있으니 .reveal 추가 숨김 제외 — 차트 공란 사고 방지 */
+.reveal:not(.panel) {
   opacity: 0; transform: translateY(30px);
   transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.reveal.show {
+.reveal:not(.panel).show {
   opacity: 1; transform: translateY(0);
 }
 

@@ -77,6 +77,18 @@ function panelDownloadButton(panel, label, getFn) {
 function initReveal() {
   const els = document.querySelectorAll('.reveal');
   if (!els.length) return;
+
+  // 첫 화면(뷰포트 안)에 있는 패널은 즉시 show — 공란 사고 방지의 1차 보호망
+  requestAnimationFrame(() => {
+    els.forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) {
+        el.classList.add('show');
+      }
+    });
+  });
+
+  // 스크롤 시 나머지를 점진적으로 show
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
@@ -84,13 +96,13 @@ function initReveal() {
         io.unobserve(e.target);
       }
     });
-  }, { threshold: 0.05, rootMargin: '0px 0px -10% 0px' });
-  els.forEach(el => io.observe(el));
+  }, { threshold: 0.02, rootMargin: '0px 0px -5% 0px' });
+  els.forEach(el => { if (!el.classList.contains('show')) io.observe(el); });
 
-  // 안전망: 1.5초 뒤에도 보이지 않은 패널은 무조건 show — 차트가 공란 보이는 사고 방지
+  // 2차 보호망: 0.8초 후 그래도 안 보인 거 강제 show
   setTimeout(() => {
     document.querySelectorAll('.reveal:not(.show)').forEach(el => el.classList.add('show'));
-  }, 1500);
+  }, 800);
 }
 
 /* ── Loader ─────────────────────────────────────────── */

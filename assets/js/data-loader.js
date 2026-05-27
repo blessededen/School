@@ -4,16 +4,18 @@ const DATA = {};
 async function loadAll() {
   if (DATA._loaded) return DATA;
   const base = window.DATA_BASE || 'assets/data';
-  const [closure, teacher, summary, geo] = await Promise.all([
+  const [closure, teacher, summary, geo, population] = await Promise.all([
     fetch(`${base}/closure.json`).then(r => r.json()),
     fetch(`${base}/teacher.json`).then(r => r.json()),
     fetch(`${base}/summary.json`).then(r => r.json()),
     fetch(`${base}/geo.json`).then(r => r.json()),
+    fetch(`${base}/population.json`).then(r => r.json()),
   ]);
   DATA.closure = closure;
   DATA.teacher = teacher;
   DATA.summary = summary;
   DATA.geo = geo;
+  DATA.population = population;
   DATA._loaded = true;
   return DATA;
 }
