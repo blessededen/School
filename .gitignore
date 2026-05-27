@@ -1,0 +1,43 @@
+# ── Secrets ─────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.key
+secrets/
+
+# ── Python ──────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ── KOSIS raw responses (재생성 가능, bloat 방지) ──
+assets/data/_kosis_raw/
+
+# ── OS / Editor ─────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Node (혹시 추후 빌드 도입 시) ────────────────────
+node_modules/
+.next/
+dist/
+build/
+
+# ── Logs / temp ─────────────────────────────────────
+*.log
+.cache/
+tmp/

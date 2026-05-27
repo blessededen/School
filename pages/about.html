@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>자료 · 폐교 아틀라스</title>
+
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/main.css" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="brand">학교가 <span>사라지는</span> 속도</div>
+    <div class="links">
+      <a href="../index.html">지도</a>
+      <a href="timeline.html">시계열</a>
+      <a href="compare.html">인구·교원</a>
+      <a href="forecast.html">예측</a>
+      <a href="3d.html">3D</a>
+      <a class="active" href="about.html">자료</a>
+    </div>
+    <div class="api-badge"><span class="dot"></span>KOSIS API 실데이터 연동</div>
+  </nav>
+
+  <section class="hero">
+    <h1 style="font-size:clamp(28px,4vw,46px);">자료 출처와 기술 스택</h1>
+    <p class="sub">
+      모든 차트는 정적 JSON에서 클라이언트 렌더링됩니다.
+      재현하려면 <code>scripts/build_site_data.py</code>를 실행하세요.
+    </p>
+  </section>
+
+  <main style="max-width:1100px; margin:0 auto; padding:0 28px 60px;">
+    <section class="panel" style="margin-bottom:20px;">
+      <h2>데이터 출처</h2>
+      <table style="width:100%; font-size:13px; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--line);">
+            <th style="text-align:left; padding:10px 8px; color:var(--text-dim);">자료</th>
+            <th style="text-align:left; padding:10px 8px; color:var(--text-dim);">운영기관</th>
+            <th style="text-align:left; padding:10px 8px; color:var(--text-dim);">기준일</th>
+            <th style="text-align:left; padding:10px 8px; color:var(--text-dim);">ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px dashed var(--line);">
+            <td style="padding:10px 8px;">학교알리미 폐교정보</td>
+            <td style="padding:10px 8px;">한국교육학술정보원</td>
+            <td style="padding:10px 8px;">2025-09-30</td>
+            <td style="padding:10px 8px;"><code>15154585</code></td>
+          </tr>
+          <tr style="border-bottom:1px dashed var(--line);">
+            <td style="padding:10px 8px;">초·중등학교 학교정보</td>
+            <td style="padding:10px 8px;">한국교육학술정보원</td>
+            <td style="padding:10px 8px;">2024-12-10</td>
+            <td style="padding:10px 8px;"><code>15123572</code></td>
+          </tr>
+          <tr style="border-bottom:1px dashed var(--line);">
+            <td style="padding:10px 8px;">시도 행정구역 경계</td>
+            <td style="padding:10px 8px;">통계청 SGIS</td>
+            <td style="padding:10px 8px;">2013</td>
+            <td style="padding:10px 8px;">—</td>
+          </tr>
+          <tr style="border-bottom:1px dashed var(--line);">
+            <td style="padding:10px 8px;">주민등록인구 (시도) <span class="badge-source real" style="margin-left:6px;">REAL</span></td>
+            <td style="padding:10px 8px;">통계청 (KOSIS Open API)</td>
+            <td style="padding:10px 8px;">2016–2025</td>
+            <td style="padding:10px 8px;"><code>101/DT_1B040A3</code></td>
+          </tr>
+          <tr style="border-bottom:1px dashed var(--line);">
+            <td style="padding:10px 8px;">시도별 교원수·신규임용 <span class="badge-source estimate" style="margin-left:6px;">ESTIMATE</span></td>
+            <td style="padding:10px 8px;">KESS 교육통계연보 추세 + base anchor</td>
+            <td style="padding:10px 8px;">2010–2024</td>
+            <td style="padding:10px 8px;"><code>—</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel" style="margin-bottom:20px;">
+      <h2>기술 스택</h2>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-top:6px;">
+        <div style="background:var(--bg-elev-2); padding:14px; border-radius:10px;">
+          <div style="color:var(--accent); font-weight:700; margin-bottom:6px;">데이터 파이프라인</div>
+          <div style="font-size:12px; color:var(--text-dim); line-height:1.7;">
+            Python 3.13 · pandas<br>
+            urllib (KOSIS API)<br>
+            CSV → JSON 정적 빌드
+          </div>
+        </div>
+        <div style="background:var(--bg-elev-2); padding:14px; border-radius:10px;">
+          <div style="color:var(--accent); font-weight:700; margin-bottom:6px;">UI · 스타일</div>
+          <div style="font-size:12px; color:var(--text-dim); line-height:1.7;">
+            Vanilla HTML/CSS/JS<br>
+            Pretendard 폰트<br>
+            CSS Grid · Custom Properties
+          </div>
+        </div>
+        <div style="background:var(--bg-elev-2); padding:14px; border-radius:10px;">
+          <div style="color:var(--accent); font-weight:700; margin-bottom:6px;">지도</div>
+          <div style="font-size:12px; color:var(--text-dim); line-height:1.7;">
+            Leaflet 1.9 (Choropleth)<br>
+            TopoJSON 시도 경계<br>
+            deck.gl 9.0 (3D ColumnLayer)
+          </div>
+        </div>
+        <div style="background:var(--bg-elev-2); padding:14px; border-radius:10px;">
+          <div style="color:var(--accent); font-weight:700; margin-bottom:6px;">차트</div>
+          <div style="font-size:12px; color:var(--text-dim); line-height:1.7;">
+            Plotly.js 2.35<br>
+            듀얼 Y축 · 산점도 · 신뢰밴드
+          </div>
+        </div>
+        <div style="background:var(--bg-elev-2); padding:14px; border-radius:10px;">
+          <div style="color:var(--accent); font-weight:700; margin-bottom:6px;">머신러닝</div>
+          <div style="font-size:12px; color:var(--text-dim); line-height:1.7;">
+            TensorFlow.js 4.20<br>
+            브라우저 학습 (Adam, 600 epochs)<br>
+            다항회귀
+          </div>
+        </div>
+        <div style="background:var(--bg-elev-2); padding:14px; border-radius:10px;">
+          <div style="color:var(--accent); font-weight:700; margin-bottom:6px;">빌드</div>
+          <div style="font-size:12px; color:var(--text-dim); line-height:1.7;">
+            빌드 없음. CDN만.<br>
+            폴더째 zip → 제출<br>
+            <code>index.html</code> 더블클릭 실행
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-bottom:20px;">
+      <h2>재현 방법</h2>
+      <pre style="background:var(--bg-elev-2); padding:14px; border-radius:10px; font-size:12px; line-height:1.6; overflow-x:auto; color:var(--text);">
+# 1. 데이터 재생성
+cd school_closure_project
+python school_closure_site/scripts/build_site_data.py
+
+# 2. 사이트 열기
+school_closure_site/index.html 더블클릭
+또는: python -m http.server 8000 (school_closure_site 디렉터리에서)</pre>
+    </section>
+
+    <section class="panel">
+      <h2>한계와 다음 작업</h2>
+      <ul style="line-height:2; font-size:13.5px; padding-left:20px;">
+        <li>교원 데이터는 KOSIS 실데이터 연동 전까지 합성 placeholder입니다.</li>
+        <li>예측 모델은 2002–2024 학습용 다항회귀로 단순한 편이며, 외삽 신뢰구간은 가정값(±30%)입니다.</li>
+        <li>지도 시도 경계는 통계청 2013년 자료라 강원특별자치도·전북특별자치도 명칭은 통합 라벨로 처리.</li>
+        <li>학교명 매칭 일치율 14.8%로 학교 메타와의 결합은 추가 보강 필요.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <div>© 2026 학교 폐교 인터랙티브 아틀라스 · 공공데이터 기반 비영리 시각화</div>
+  </footer>
+</body>
+</html>

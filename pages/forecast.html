@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>예측 시뮬레이터 · 폐교 아틀라스</title>
+
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <script>window.DATA_BASE = '../assets/data';</script>
+</head>
+<body>
+  <div id="loader">
+    <div class="loader-ring"></div><div class="loader-text">데이터 로딩 중</div>
+  </div>
+
+  <nav class="nav">
+    <div class="brand">학교가 <span>사라지는</span> 속도</div>
+    <div class="links">
+      <a href="../index.html">지도</a>
+      <a href="timeline.html">시계열</a>
+      <a href="compare.html">인구·교원</a>
+      <a class="active" href="forecast.html">예측</a>
+      <a href="3d.html">3D</a>
+      <a href="about.html">자료</a>
+    </div>
+    <div class="api-badge"><span class="dot"></span>TensorFlow.js 학습 중</div>
+  </nav>
+
+  <section class="hero" style="padding-bottom:24px;">
+    <h1 style="font-size:clamp(28px,4vw,46px);">2030년 시뮬레이션</h1>
+    <p class="sub">
+      브라우저에서 TensorFlow.js로 시도별 2차 파동(2002–2024)을 학습해 2025–2035 폐교 추세를 예측합니다.
+      가속도·정책 효과·인구절벽 강도 세 슬라이더로 시나리오를 직접 만들어 보세요.
+    </p>
+  </section>
+
+  <main style="max-width:1400px; margin:0 auto; padding:0 28px 60px;">
+    <div style="display:grid; grid-template-columns: 320px 1fr; gap:20px;">
+      <section class="panel reveal">
+        <h2>시나리오 컨트롤</h2>
+
+        <label style="display:block; margin-bottom:18px;">
+          <div style="font-size:12px; color:var(--text-dim); margin-bottom:6px;">대상 시도</div>
+          <select id="sel-sido" style="width:100%; background:var(--bg-elev-2); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px;"></select>
+        </label>
+
+        <label style="display:block; margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); margin-bottom:6px;">
+            <span>가속도 (트렌드 기울기)</span>
+            <span id="val-slope" style="color:var(--accent);font-weight:700;">×1.0</span>
+          </div>
+          <input type="range" id="sl-slope" min="0" max="3" step="0.05" value="1" style="width:100%; accent-color:var(--accent);" />
+        </label>
+
+        <label style="display:block; margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); margin-bottom:6px;">
+            <span>정책 충격 (통폐합 정책)</span>
+            <span id="val-policy" style="color:var(--accent-2);font-weight:700;">0교</span>
+          </div>
+          <input type="range" id="sl-policy" min="0" max="100" step="1" value="0" style="width:100%; accent-color:var(--accent-2);" />
+        </label>
+
+        <label style="display:block; margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); margin-bottom:6px;">
+            <span>인구절벽 강도</span>
+            <span id="val-demo" style="color:var(--accent-3);font-weight:700;">기본</span>
+          </div>
+          <input type="range" id="sl-demo" min="0.5" max="2" step="0.05" value="1" style="width:100%; accent-color:var(--accent-3);" />
+        </label>
+
+        <button id="btn-retrain" style="width:100%; background:var(--accent); color:#0a0e1a; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer;">
+          모델 재학습
+        </button>
+
+        <div id="model-status" style="margin-top:14px; padding:10px; background:var(--bg-elev-2); border-radius:8px; font-size:11px; color:var(--text-dim); line-height:1.6;">
+          모델 로드 대기 중...
+        </div>
+      </section>
+
+      <section class="panel reveal">
+        <h2>실측 + 2025–2035 예측 (TensorFlow.js)</h2>
+        <div id="chart-forecast" class="chart-host tall"></div>
+        <div id="forecast-summary" style="margin-top:14px; padding:14px; background:var(--bg-elev-2); border-radius:10px; font-size:13px; line-height:1.7;"></div>
+      </section>
+    </div>
+
+    <section class="story">
+      <strong>모델.</strong> 시도별 2002–2024 폐교 시계열을 입력으로
+      간단한 2차 다항 회귀(<code>y = a + b·t + c·t²</code>) 가중치를 TensorFlow.js로 학습합니다.
+      그런 다음 슬라이더 값으로 외생 충격 항을 더해 2025–2035 구간을 외삽합니다.
+      <strong>주의.</strong> 시계열 모형으로는 단순한 편이며, 외삽은 23년 학습 데이터 밖이므로 시나리오 탐색용으로만 사용하세요.
+    </section>
+  </main>
+
+  <footer>
+    <div>학습: 브라우저 (TensorFlow.js 4.x) · 데이터: 학교알리미 · 모형: Polynomial Regression</div>
+  </footer>
+
+  <script src="../assets/js/data-loader.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/forecast.js"></script>
+</body>
+</html>

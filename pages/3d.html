@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3D 시각화 · 폐교 아틀라스</title>
+
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+  <script src="https://unpkg.com/deck.gl@9.0.31/dist.min.js"></script>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <script>window.DATA_BASE = '../assets/data';</script>
+  <style>
+    #deck-host {
+      position: relative;
+      width: 100%; height: 70vh;
+      background: radial-gradient(ellipse at center, #0d111e, #050811);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    #deck-host canvas { border-radius: 14px; }
+    .deck-overlay {
+      position: absolute; top: 14px; left: 14px;
+      background: rgba(6,9,15,0.85);
+      backdrop-filter: blur(12px);
+      padding: 10px 14px; border-radius: 10px;
+      border: 1px solid var(--line);
+      font-size: 11px; color: var(--text-dim);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .deck-overlay b { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div id="loader">
+    <div class="loader-ring"></div><div class="loader-text">WebGL 초기화 중</div>
+  </div>
+
+  <nav class="nav">
+    <div class="brand">학교가 <span>사라지는</span> 속도</div>
+    <div class="links">
+      <a href="../index.html">지도</a>
+      <a href="timeline.html">시계열</a>
+      <a href="compare.html">인구·교원</a>
+      <a href="forecast.html">예측</a>
+      <a class="active" href="3d.html">3D</a>
+      <a href="about.html">자료</a>
+    </div>
+    <div class="api-badge"><span class="dot"></span>deck.gl WebGL 2.0</div>
+  </nav>
+
+  <section class="hero" style="padding-bottom:24px;">
+    <h1 style="font-size:clamp(28px,4vw,46px);">시간을 세 번째 축으로</h1>
+    <p class="sub">
+      시도 × 연도 × 폐교 수를 한반도 지도 위 3D 막대로 띄웁니다.
+      드래그로 회전, 휠로 줌. 막대 높이가 높을수록 그해 그 시도의 폐교 수가 많습니다.
+    </p>
+  </section>
+
+  <main style="max-width:1400px; margin:0 auto; padding:0 28px 60px;">
+    <section class="panel reveal">
+      <h2>3D 컬럼 — 시도 × 연도</h2>
+      <div class="controls-row">
+        <label style="display:flex; align-items:center; gap:8px; color:var(--text-dim); font-size:12px;">
+          <span>높이 강조</span>
+          <input type="range" id="height-scale" min="1" max="50" value="20" />
+          <span id="height-val">×20</span>
+        </label>
+        <button id="btn-rotate">자동 회전</button>
+        <button id="btn-mode">전체 / 정점만</button>
+      </div>
+      <div id="deck-host">
+        <div class="deck-overlay" id="overlay">
+          <b>드래그</b> 회전 · <b>휠</b> 줌 · <b>Shift+드래그</b> 이동
+        </div>
+      </div>
+    </section>
+
+    <section class="story" style="margin-top:20px;">
+      <strong>읽는 법.</strong> 1999년 라인을 보면 경남·전남·강원 일대에서 단일 연도 막대가 폭발한다.
+      이후 그 폭발은 사라지고, 2015년 이후 경북 라인이 가늘고 길게 솟아오른다.
+      한 화면에 두 파동의 모양 차이가 보입니다.
+    </section>
+  </main>
+
+  <footer>
+    <div>렌더링: deck.gl ColumnLayer (WebGL2) · 좌표: 시도 중심점</div>
+  </footer>
+
+  <script src="../assets/js/data-loader.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/3d.js"></script>
+</body>
+</html>

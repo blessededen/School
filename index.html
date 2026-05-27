@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>학교가 사라지는 속도 · 폐교 인터랙티브 아틀라스</title>
+  <meta name="description" content="1976~2024 전국 1,346개 폐교 시도별 인터랙티브 시각화" />
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <link rel="stylesheet" href="assets/css/main.css" />
+</head>
+<body>
+  <div id="loader">
+    <div class="loader-ring"></div>
+    <div class="loader-text">데이터 로딩 중</div>
+  </div>
+
+  <nav class="nav">
+    <div class="brand">학교가 <span>사라지는</span> 속도</div>
+    <div class="links">
+      <a class="active" href="index.html">지도</a>
+      <a href="pages/timeline.html">시계열</a>
+      <a href="pages/compare.html">인구·교원</a>
+      <a href="pages/forecast.html">예측</a>
+      <a href="pages/3d.html">3D</a>
+      <a href="pages/about.html">자료</a>
+    </div>
+    <div class="api-badge"><span class="dot"></span>KOSIS API 실데이터 연동</div>
+  </nav>
+
+  <section class="hero">
+    <h1>1976년 이후 전국에서<br>1,346개 학교가 문을 닫았다.</h1>
+    <p class="sub">
+      한 줄의 통계 안에 두 개의 파동이 있다. 1999년 정책 충격, 그리고 2010년대 이후 인구절벽.
+      지도를 클릭해 시도별 흐름을 펴 보세요. 슬라이더로 시간을 움직이면 1위가 어디로 가는지 보입니다.
+    </p>
+  </section>
+
+  <section class="kpis">
+    <div class="kpi">
+      <div class="label">전체 폐교</div>
+      <div class="value"><span id="kpi-total">0</span><span class="unit">교</span></div>
+      <div class="delta">학교알리미 통합본</div>
+    </div>
+    <div class="kpi">
+      <div class="label">관측 기간</div>
+      <div class="value" id="kpi-period" style="font-size:24px;">—</div>
+      <div class="delta">49년 시계열</div>
+    </div>
+    <div class="kpi">
+      <div class="label">단년 최대</div>
+      <div class="value"><span id="kpi-peak">0</span><span class="unit">교</span></div>
+      <div class="delta" id="kpi-peak-year">—</div>
+    </div>
+    <div class="kpi">
+      <div class="label">인구 최대 감소</div>
+      <div class="value" style="font-size:24px;"><span id="kpi-pop-name">—</span> <span id="kpi-pop-pct">0</span><span class="unit">%</span></div>
+      <div class="delta">KOSIS 주민등록인구 2016→2025</div>
+    </div>
+  </section>
+
+  <main class="layout">
+    <section class="panel reveal" style="position:relative;">
+      <h2>시도별 폐교 — 시간을 움직이세요
+        <span class="badge-source real">REAL DATA</span>
+      </h2>
+      <div class="panel-toolbar"></div>
+      <div class="controls-row">
+        <button id="mode-cum" class="active">누적</button>
+        <button id="mode-yr">단년</button>
+        <input id="sido-search" class="search-input" placeholder="시도 검색 (예: 경북)" style="max-width:240px; margin-left:auto;" />
+      </div>
+      <div id="map"></div>
+      <div class="legend">
+        <div style="margin-bottom:6px; color:var(--text-dim); font-weight:500;">폐교 수</div>
+        <div class="row"><div class="swatch" style="background:#141a2e"></div><span>0</span></div>
+        <div class="row"><div class="swatch" style="background:#5eead4"></div><span>적음</span></div>
+        <div class="row"><div class="swatch" style="background:#a89cb7"></div><span>중간</span></div>
+        <div class="row"><div class="swatch" style="background:#ff6b9d"></div><span>많음</span></div>
+      </div>
+      <div class="year-slider">
+        <div class="display">
+          <span>1976</span>
+          <span class="year" id="year-display">2024</span>
+          <span>2024</span>
+        </div>
+        <input type="range" id="year-slider" min="1976" max="2024" value="2024" step="1" />
+        <div class="controls">
+          <button id="play">▶ 재생</button>
+          <button id="share">🔗 현재 상태 공유</button>
+          <span style="color:var(--text-faint);font-size:11px;margin-left:auto;">
+            슬라이더로 연도 이동 · 지도 클릭으로 시도 선택
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <aside>
+      <section class="panel reveal">
+        <h2>시도 순위</h2>
+        <div class="panel-toolbar"></div>
+        <div class="sido-table" id="sido-list"></div>
+      </section>
+
+      <section class="insights reveal" id="story" style="margin-top:20px;">
+        <span class="ai-label">AI 분석</span>
+        지도에서 시도를 클릭하거나 검색하면 폐교 추세 · 인구 변화 · 교원 추정 분석이 여기에 표시됩니다.
+      </section>
+    </aside>
+  </main>
+
+  <footer>
+    <div>출처: 학교알리미 폐교정보 · 통계청 SGIS · KOSIS Open API (DT_1B040A3) · KESS 교육통계연보</div>
+    <div class="stack">
+      <span class="chip">Vanilla JS</span>
+      <span class="chip">Leaflet</span>
+      <span class="chip">Plotly.js</span>
+      <span class="chip">deck.gl</span>
+      <span class="chip">TensorFlow.js</span>
+      <span class="chip">KOSIS API</span>
+      <span class="chip">Pandas → JSON</span>
+      <span class="chip">Glassmorphism</span>
+    </div>
+  </footer>
+
+  <script src="assets/js/data-loader.js"></script>
+  <script src="assets/js/utils.js"></script>
+  <script src="assets/js/map.js"></script>
+  <script src="assets/js/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>시계열 분석 · 폐교 아틀라스</title>
+
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <script>window.DATA_BASE = '../assets/data';</script>
+</head>
+<body>
+  <div id="loader">
+    <div class="loader-ring"></div><div class="loader-text">데이터 로딩 중</div>
+  </div>
+
+  <nav class="nav">
+    <div class="brand">학교가 <span>사라지는</span> 속도</div>
+    <div class="links">
+      <a href="../index.html">지도</a>
+      <a class="active" href="timeline.html">시계열</a>
+      <a href="compare.html">인구·교원</a>
+      <a href="forecast.html">예측</a>
+      <a href="3d.html">3D</a>
+      <a href="about.html">자료</a>
+    </div>
+    <div class="api-badge"><span class="dot"></span>KOSIS API 실데이터 연동</div>
+  </nav>
+
+  <section class="hero" style="padding-bottom:24px;">
+    <h1 style="font-size:clamp(28px,4vw,46px);">두 개의 파동</h1>
+    <p class="sub">
+      1999년 정책 충격(196교)과 2010년대 이후 가속하는 인구절벽. 시도를 선택해 흐름을 분해해 보세요.
+    </p>
+  </section>
+
+  <main style="max-width:1480px; margin:0 auto; padding:0 32px 60px;">
+    <section class="panel reveal" style="margin-bottom:20px;">
+      <h2>전국 연도별 폐교 수
+        <span class="badge-source real">REAL DATA</span>
+      </h2>
+      <div class="panel-toolbar"></div>
+      <div id="chart-national" class="chart-host tall"></div>
+    </section>
+
+    <div class="grid-2">
+      <section class="panel reveal">
+        <h2>시도별 누적 (1976→2024)
+          <span class="badge-source real">REAL</span>
+        </h2>
+        <div class="panel-toolbar"></div>
+        <div class="controls-row">
+          <select id="sel-mode">
+            <option value="cumulative">누적</option>
+            <option value="yearly">단년</option>
+            <option value="ma5">5년 이동평균</option>
+          </select>
+          <button id="btn-toggle-all">전체 표시/숨기기</button>
+        </div>
+        <div id="chart-sido" class="chart-host tall"></div>
+      </section>
+
+      <section class="panel reveal">
+        <h2>시도 비교 — 다중 선택
+          <span class="badge-source real">REAL</span>
+        </h2>
+        <div class="panel-toolbar"></div>
+        <div class="controls-row" id="sido-chips"></div>
+        <div id="chart-compare" class="chart-host tall"></div>
+      </section>
+    </div>
+
+    <section class="insights reveal">
+      <span class="ai-label">관측 노트</span>
+      <strong>1990–2001 첫 파동</strong>은 농어촌 소규모학교 통폐합 정책이 일으킨 외생 충격.
+      1999년 196교의 절대 정점은 시계열 모형에서 더미로 분리해야 합니다.
+      <strong>2010년대 이후 두 번째 파동</strong>은 정점 없이 꾸준한 증가 — 경북이 단독으로 누적 1위를 굳혀가는 중.
+      <span class="citation">1차 결과보고서 §시간 축에서 본 흐름.</span>
+    </section>
+  </main>
+
+  <footer>
+    <div>출처: 한국교육학술정보원 학교알리미 폐교정보 (2025-09-30)</div>
+  </footer>
+
+  <script src="../assets/js/data-loader.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/timeline.js"></script>
+</body>
+</html>
