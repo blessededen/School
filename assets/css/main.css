@@ -845,6 +845,17 @@ input, select, textarea, button {
   color-scheme: dark;
 }
 
+/* select 펼침 옵션은 OS 기본 렌더라 color-scheme만으론 불충분 — 명시적 색 강제 */
+select option {
+  background-color: #131829 !important;
+  color: #e8edf7 !important;
+}
+select option:checked,
+select option:hover {
+  background-color: #243049 !important;
+  color: #5eead4 !important;
+}
+
 /* ── 본문 끝 영역 보호 ─────────────────────────────── */
 html { background: var(--bg-0); }
 body { min-height: 100vh; }
