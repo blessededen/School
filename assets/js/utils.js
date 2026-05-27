@@ -84,8 +84,13 @@ function initReveal() {
         io.unobserve(e.target);
       }
     });
-  }, { threshold: 0.1 });
+  }, { threshold: 0.05, rootMargin: '0px 0px -10% 0px' });
   els.forEach(el => io.observe(el));
+
+  // 안전망: 1.5초 뒤에도 보이지 않은 패널은 무조건 show — 차트가 공란 보이는 사고 방지
+  setTimeout(() => {
+    document.querySelectorAll('.reveal:not(.show)').forEach(el => el.classList.add('show'));
+  }, 1500);
 }
 
 /* ── Loader ─────────────────────────────────────────── */

@@ -85,7 +85,11 @@ async function initHome() {
     renderSidoList();
     renderStory(sido);
     syncHash();
+    document.dispatchEvent(new Event('sido-focus-changed'));
   });
+
+  // 실시간 LLM 채팅
+  mountChat(document.getElementById('chat-panel'), () => MAP_STATE.selectedSido);
 
   // 다운로드 버튼
   document.querySelectorAll('.panel').forEach((panel, i) => {

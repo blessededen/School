@@ -49,6 +49,15 @@ python scripts/build_site_data.py   # raw + 폐교 CSV → JSON
 | `pages/3d.html` | deck.gl 3D 컬럼 시각화 |
 | `pages/about.html` | 자료 출처 · 기술 스택 · 한계 |
 
+## AI 채팅 (실시간 LLM)
+
+홈·인구·교원 페이지 하단 챗 패널 우상단 ⚙ 클릭 → 본인 API 키 입력 (OpenAI · Anthropic Claude · Google Gemini 중 선택).
+
+- 키는 본인 브라우저 **localStorage에만** 저장. 서버 안 거치고 LLM API에 직접 호출
+- 키 비용은 본인 부담 (대화당 보통 ~0.0001 USD)
+- 시도 선택 시 그 시도 데이터가 자동으로 시스템 프롬프트에 첨부됨
+- 키 없이도 자동 요약(룰베이스)은 동작
+
 ## 기술 스택
 
 - 빌드: Python 3.13 + pandas → 정적 JSON

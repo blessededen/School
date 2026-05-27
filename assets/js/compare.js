@@ -30,6 +30,8 @@ async function init() {
   drawDensity();
   updateInsight();
   attachDownloads();
+
+  mountChat(document.getElementById('chat-panel'), () => SELECTED_SIDO);
 }
 
 function buildChips() {
@@ -44,6 +46,7 @@ function buildChips() {
       drawDual();
       updateInsight();
       setHash({ sido: SELECTED_SIDO });
+      document.dispatchEvent(new Event('sido-focus-changed'));
     });
   });
 }

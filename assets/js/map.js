@@ -41,7 +41,19 @@ function paintLayer() {
   if (!map) return;
   if (MAP_STATE.layer) map.removeLayer(MAP_STATE.layer);
 
-  const maxVal = Math.max(...DATA.closure.sido.map(s => getValueFor(s)));
+  // 누적 모드: 전체 기간(시도×연도) 최대값으로 고정 정규화 → 시간 흐름에 따라 빨강이 점진 강조됨
+  // 단년 모드: 그해 최대로 상대 정규화 (그해 시도간 분포 강조)
+  let maxVal;
+  if (MAP_STATE.mode === 'cumulative') {
+    if (!MAP_STATE._globalCumMax) {
+      MAP_STATE._globalCumMax = Math.max(
+        ...DATA.closure.sido.flatMap(s => DATA.closure.cumulative[s])
+      );
+    }
+    maxVal = MAP_STATE._globalCumMax;
+  } else {
+    maxVal = Math.max(...DATA.closure.sido.map(s => getValueFor(s)));
+  }
 
   MAP_STATE.layer = L.geoJSON(DATA.geo, {
     style: feat => {

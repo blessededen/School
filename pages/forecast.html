@@ -10,6 +10,95 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
   <link rel="stylesheet" href="../assets/css/main.css" />
   <script>window.DATA_BASE = '../assets/data';</script>
+  <style>
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .preset-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      font-family: inherit;
+      color: var(--text);
+    }
+    .preset-card:hover {
+      border-color: var(--accent);
+      background: rgba(94,234,212,0.06);
+      transform: translateY(-2px);
+    }
+    .preset-card.active {
+      border-color: var(--accent);
+      background: rgba(94,234,212,0.1);
+      box-shadow: 0 0 20px rgba(94,234,212,0.15);
+    }
+    .preset-card .title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .preset-card.bad .title { color: var(--accent-2); }
+    .preset-card.mid .title { color: var(--accent-3); }
+    .preset-card.good .title { color: var(--accent); }
+    .preset-card .desc {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .summary-card {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .summary-card .lbl {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+    .summary-card .val {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .summary-card .val.neg { color: var(--accent-2); }
+    .summary-card .val.pos { color: var(--accent); }
+    .summary-card .sub {
+      font-size: 11px;
+      color: var(--text-faint);
+      margin-top: 4px;
+    }
+    .advanced-toggle {
+      display: inline-flex; align-items: center; gap: 6px;
+      cursor: pointer; font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 8px;
+    }
+    .advanced-toggle:hover { color: var(--accent); }
+    .advanced-panel {
+      display: none;
+      margin-top: 12px;
+      padding: 14px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      border: 1px solid var(--line);
+    }
+    .advanced-panel.show { display: block; }
+  </style>
 </head>
 <body>
   <div id="loader">
@@ -30,73 +119,105 @@
   </nav>
 
   <section class="hero" style="padding-bottom:24px;">
-    <h1 style="font-size:clamp(28px,4vw,46px);">2030년 시뮬레이션</h1>
+    <h1 style="font-size:clamp(28px,4vw,52px);">2030년에는 몇 개가 더 닫혀있을까</h1>
     <p class="sub">
-      브라우저에서 TensorFlow.js로 시도별 2차 파동(2002–2024)을 학습해 2025–2035 폐교 추세를 예측합니다.
-      가속도·정책 효과·인구절벽 강도 세 슬라이더로 시나리오를 직접 만들어 보세요.
+      시도 하나를 고르고, 시나리오 하나를 누르세요.
+      브라우저에서 TensorFlow.js가 2002–2024 실제 폐교 추세를 학습한 뒤,
+      선택한 시나리오 가정대로 2025–2035를 외삽합니다.
     </p>
   </section>
 
-  <main style="max-width:1400px; margin:0 auto; padding:0 28px 60px;">
-    <div style="display:grid; grid-template-columns: 320px 1fr; gap:20px;">
+  <main style="max-width:1480px; margin:0 auto; padding:0 32px 60px;">
+    <div style="display:grid; grid-template-columns: 380px 1fr; gap:20px;">
+
       <section class="panel reveal">
-        <h2>시나리오 컨트롤</h2>
+        <h2>1단계 · 시도 고르기</h2>
+        <select id="sel-sido" style="width:100%; background:rgba(255,255,255,0.04); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:10px; font-size:14px; font-family:inherit; margin-bottom:24px;"></select>
 
-        <label style="display:block; margin-bottom:18px;">
-          <div style="font-size:12px; color:var(--text-dim); margin-bottom:6px;">대상 시도</div>
-          <select id="sel-sido" style="width:100%; background:var(--bg-elev-2); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px;"></select>
-        </label>
+        <h2>2단계 · 시나리오 고르기</h2>
+        <div class="preset-grid">
+          <button class="preset-card bad" data-preset="worst">
+            <div class="title">⬇ 최악</div>
+            <div class="desc">인구절벽 + 통폐합 정책. 폐교 가속 30%</div>
+          </button>
+          <button class="preset-card mid active" data-preset="base">
+            <div class="title">→ 현 추세</div>
+            <div class="desc">최근 흐름 그대로. 학습값 그대로 외삽</div>
+          </button>
+          <button class="preset-card good" data-preset="best">
+            <div class="title">⬆ 회복</div>
+            <div class="desc">소규모학교 정책 회복. 신규 추가 폐교 감소</div>
+          </button>
+        </div>
 
-        <label style="display:block; margin-bottom:18px;">
-          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); margin-bottom:6px;">
-            <span>가속도 (트렌드 기울기)</span>
-            <span id="val-slope" style="color:var(--accent);font-weight:700;">×1.0</span>
-          </div>
-          <input type="range" id="sl-slope" min="0" max="3" step="0.05" value="1" style="width:100%; accent-color:var(--accent);" />
-        </label>
+        <div class="advanced-toggle" id="adv-toggle">
+          <span>▶</span> 직접 조절 (고급)
+        </div>
+        <div class="advanced-panel" id="adv-panel">
+          <label style="display:block; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim); margin-bottom:4px;">
+              <span>트렌드 가속도</span>
+              <span id="val-slope" style="color:var(--accent);font-weight:700;">×1.0</span>
+            </div>
+            <input type="range" id="sl-slope" min="0" max="3" step="0.05" value="1" style="width:100%; accent-color:var(--accent);" />
+          </label>
+          <label style="display:block; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim); margin-bottom:4px;">
+              <span>외생 충격 (정책)</span>
+              <span id="val-policy" style="color:var(--accent-2);font-weight:700;">0교</span>
+            </div>
+            <input type="range" id="sl-policy" min="-30" max="100" step="1" value="0" style="width:100%; accent-color:var(--accent-2);" />
+          </label>
+          <label style="display:block;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim); margin-bottom:4px;">
+              <span>인구절벽 강도 (2차항)</span>
+              <span id="val-demo" style="color:var(--accent-3);font-weight:700;">기본</span>
+            </div>
+            <input type="range" id="sl-demo" min="0.5" max="2" step="0.05" value="1" style="width:100%; accent-color:var(--accent-3);" />
+          </label>
+        </div>
 
-        <label style="display:block; margin-bottom:18px;">
-          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); margin-bottom:6px;">
-            <span>정책 충격 (통폐합 정책)</span>
-            <span id="val-policy" style="color:var(--accent-2);font-weight:700;">0교</span>
-          </div>
-          <input type="range" id="sl-policy" min="0" max="100" step="1" value="0" style="width:100%; accent-color:var(--accent-2);" />
-        </label>
-
-        <label style="display:block; margin-bottom:18px;">
-          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); margin-bottom:6px;">
-            <span>인구절벽 강도</span>
-            <span id="val-demo" style="color:var(--accent-3);font-weight:700;">기본</span>
-          </div>
-          <input type="range" id="sl-demo" min="0.5" max="2" step="0.05" value="1" style="width:100%; accent-color:var(--accent-3);" />
-        </label>
-
-        <button id="btn-retrain" style="width:100%; background:var(--accent); color:#0a0e1a; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer;">
-          모델 재학습
-        </button>
-
-        <div id="model-status" style="margin-top:14px; padding:10px; background:var(--bg-elev-2); border-radius:8px; font-size:11px; color:var(--text-dim); line-height:1.6;">
-          모델 로드 대기 중...
+        <div id="model-status" style="margin-top:20px; padding:10px 12px; background:var(--bg-glass); border:1px solid var(--line); border-radius:8px; font-size:10.5px; color:var(--text-faint); line-height:1.6;">
+          모델 대기 중
         </div>
       </section>
 
       <section class="panel reveal">
-        <h2>실측 + 2025–2035 예측 (TensorFlow.js)</h2>
+        <h2>예측 결과 — 실측 + 2025–2035 외삽</h2>
+        <div class="panel-toolbar"></div>
         <div id="chart-forecast" class="chart-host tall"></div>
-        <div id="forecast-summary" style="margin-top:14px; padding:14px; background:var(--bg-elev-2); border-radius:10px; font-size:13px; line-height:1.7;"></div>
+
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="lbl">2030년 한 해</div>
+            <div class="val neg"><span id="sum-2030">—</span> <span style="font-size:13px;color:var(--text-faint);">교</span></div>
+            <div class="sub">시나리오 적용 후</div>
+          </div>
+          <div class="summary-card">
+            <div class="lbl">2025–2035 누적 추가</div>
+            <div class="val neg"><span id="sum-decade">—</span> <span style="font-size:13px;color:var(--text-faint);">교</span></div>
+            <div class="sub">앞으로 10년 동안</div>
+          </div>
+          <div class="summary-card">
+            <div class="lbl">2035년 총 누적</div>
+            <div class="val"><span id="sum-total">—</span> <span style="font-size:13px;color:var(--text-faint);">교</span></div>
+            <div class="sub">현재 + 예측</div>
+          </div>
+        </div>
       </section>
     </div>
 
-    <section class="story">
-      <strong>모델.</strong> 시도별 2002–2024 폐교 시계열을 입력으로
-      간단한 2차 다항 회귀(<code>y = a + b·t + c·t²</code>) 가중치를 TensorFlow.js로 학습합니다.
-      그런 다음 슬라이더 값으로 외생 충격 항을 더해 2025–2035 구간을 외삽합니다.
-      <strong>주의.</strong> 시계열 모형으로는 단순한 편이며, 외삽은 23년 학습 데이터 밖이므로 시나리오 탐색용으로만 사용하세요.
+    <section class="insights reveal" style="margin-top:20px;">
+      <span class="ai-label">읽는 법</span>
+      <strong>회색 막대</strong>는 실측 폐교, <strong>노란 점선</strong>은 모델이 2002–2024를 학습한 적합선,
+      <strong>핑크 선</strong>은 시나리오를 적용한 미래 예측, <strong>핑크 그림자</strong>는 ±30% 불확실성 밴드.
+      모델은 2차 다항회귀로 단순하며, 외삽은 학습 구간(23년) 밖이므로 <strong>시나리오 탐색용</strong>으로만 사용하세요.
+      <span class="citation">학습: 브라우저 TensorFlow.js 4.20, Adam optimizer 600 epochs · 데이터: 학교알리미 1,346건</span>
     </section>
   </main>
 
   <footer>
-    <div>학습: 브라우저 (TensorFlow.js 4.x) · 데이터: 학교알리미 · 모형: Polynomial Regression</div>
+    <div>학습: 브라우저 (TensorFlow.js) · 데이터: 학교알리미 · 모형: Polynomial Regression</div>
   </footer>
 
   <script src="../assets/js/data-loader.js"></script>
