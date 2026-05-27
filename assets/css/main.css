@@ -828,6 +828,27 @@ table.data tr:hover td {
   margin-top: 18px;
 }
 
+/* ── Plotly 안전망 — 흰배경/검은텍스트 누출 방지 ─────── */
+.js-plotly-plot, .plot-container, .svg-container { background: transparent !important; }
+.js-plotly-plot .main-svg { background: transparent !important; }
+.js-plotly-plot .bg { fill: transparent !important; }
+.js-plotly-plot .bglayer rect, .js-plotly-plot .gridlayer rect { fill: transparent !important; }
+.js-plotly-plot text { fill: var(--text) !important; }
+.js-plotly-plot .xtick text, .js-plotly-plot .ytick text { fill: var(--text-dim) !important; }
+.js-plotly-plot .gtitle, .js-plotly-plot .ytitle, .js-plotly-plot .xtitle { fill: var(--text) !important; }
+.js-plotly-plot .legendtext { fill: var(--text) !important; }
+.js-plotly-plot .hovertext { fill: var(--text) !important; }
+.js-plotly-plot .annotation-text { fill: var(--text) !important; }
+
+/* ── 전역 흰배경 누출 방지 — input/select/textarea ── */
+input, select, textarea, button {
+  color-scheme: dark;
+}
+
+/* ── 본문 끝 영역 보호 ─────────────────────────────── */
+html { background: var(--bg-0); }
+body { min-height: 100vh; }
+
 /* ── Print ──────────────────────────────────────────────────── */
 @media print {
   body { background: white; color: black; }
