@@ -4,20 +4,28 @@ const DATA = {};
 async function loadAll() {
   if (DATA._loaded) return DATA;
   const base = window.DATA_BASE || 'assets/data';
-  const [closure, teacher, summary, geo, population] = await Promise.all([
+  const [closure, summary, geo, population, housing] = await Promise.all([
     fetch(`${base}/closure.json`).then(r => r.json()),
-    fetch(`${base}/teacher.json`).then(r => r.json()),
     fetch(`${base}/summary.json`).then(r => r.json()),
     fetch(`${base}/geo.json`).then(r => r.json()),
     fetch(`${base}/population.json`).then(r => r.json()),
+    fetch(`${base}/housing.json`).then(r => r.json()).catch(() => null),
   ]);
   DATA.closure = closure;
-  DATA.teacher = teacher;
   DATA.summary = summary;
   DATA.geo = geo;
   DATA.population = population;
+  DATA.housing = housing;
   DATA._loaded = true;
   return DATA;
+}
+
+// 매물(부동산) 데이터는 무거울 수 있어 필요한 페이지에서만 별도 로드
+async function loadListings() {
+  if (DATA.listings) return DATA.listings;
+  const base = window.DATA_BASE || 'assets/data';
+  DATA.listings = await fetch(`${base}/listings.json`).then(r => r.json());
+  return DATA.listings;
 }
 
 // 시도 누적 폐교 → 색상 (퀀타일 기반 단색 스케일)

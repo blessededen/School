@@ -766,8 +766,8 @@ table.data tr:hover td {
   color: var(--text-faint);
 }
 
-/* ── AI key modal ───────────────────────────────────── */
-#ai-key-modal {
+/* ── AI key modal / 매물 상세 모달 ──────────────────── */
+#ai-key-modal, #lst-modal {
   position: fixed; inset: 0; z-index: 10000;
   display: flex; align-items: center; justify-content: center;
 }

@@ -182,58 +182,88 @@ def build_population_real():
     return True
 
 
-def build_teacher_estimate():
-    """KESS 교육통계연보 공개 추세선 기반 시도별 교원수·신규임용 추정치.
+def build_housing():
+    """한국부동산원 유형별 매매가격지수 (종합) → 시도별 연도별 지수 (실데이터, KOSIS 408/DT_30404_B012).
 
-    실데이터 아님 — KESS 공개 보고서의 시도별 교원 통계 추세를 함수로 근사.
-    명시적으로 'estimate' 표기. 시도별 절대치는 KESS 2024년 시도별 학교급별 교원수
-    공개치를 base로 ±5% 범위 내 시계열 형태로 fit.
+    지수 기준 2026.1=100. 시도별 집값 추세(상승/하락) 비교용.
     """
-    panel = pd.read_csv(INTERIM / "panel_sido_year.csv")
+    key = _get_key_optional()
+    if not key:
+        print("housing.json 건너뜀 (KOSIS 키 없음)")
+        return
+    import urllib.parse
 
-    # KESS 공개 시도별 초·중·고 교원수 근사값 (2024년 기준, 단위: 명)
-    # 출처: 교육통계서비스 kess.kedi.re.kr 공개 통계
-    base_2024 = {
-        "서울": 78400, "부산": 32500, "대구": 23000, "인천": 26800,
-        "광주": 15500, "대전": 14200, "울산": 11200, "세종": 5800,
-        "경기": 124000, "강원": 17800, "충북": 17500, "충남": 24400,
-        "전북": 19000, "전남": 19800, "경북": 27500, "경남": 33000, "제주": 7500,
+    q = {
+        "method": "getList", "apiKey": key, "format": "json", "jsonVD": "Y",
+        "orgId": "408", "tblId": "DT_30404_B012",
+        "itmId": "ALL", "objL1": "00", "objL2": "ALL",  # 00=종합
+        "prdSe": "M", "newEstPrdCnt": "120",  # 최근 120개월
     }
+    url = "https://kosis.kr/openapi/Param/statisticsParameterData.do?" + urllib.parse.urlencode(q)
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        rows = json.loads(urllib.request.urlopen(req, timeout=40).read().decode("utf-8"))
+    except Exception as e:
+        print(f"housing fetch 실패: {e}")
+        return
+    if not isinstance(rows, list):
+        print(f"housing 응답 이상: {rows}")
+        return
 
-    years = list(range(2010, 2025))
-    teachers, new_hires = {}, {}
-    for sido in ALL_SIDO:
-        base = base_2024[sido]
-        t_series, h_series = [], []
-        for i, y in enumerate(years):
-            # 시도별 인구·학생 추세 흉내: 2010~2014 증가, 2015~2024 완만한 감소
-            peak = 2014
-            tilt = -((y - peak) ** 2) / 220
-            scale = 1.0 + 0.07 * math.exp(tilt) - 0.003 * max(0, y - 2014)
-            t = int(base * scale)
-            # 신규임용 = 교원수 * 채용률(약 3~5%) - 시도별 폐교 가속에 비례 감소
-            close_sub = panel[(panel["지역"] == sido) & (panel["폐교연도"] == y)]
-            close_y = int(close_sub["폐교수"].sum()) if not close_sub.empty else 0
-            h = max(50, int(t * 0.038 - close_y * 8 + math.cos(i / 2.5) * 60))
-            t_series.append(t)
-            h_series.append(h)
-        teachers[sido] = t_series
-        new_hires[sido] = h_series
+    # 시도만 추출, 월별 → 연도별(연말값=12월, 없으면 최신월)
+    sido_set = set(ALL_SIDO)
+    by_sido_month = {}  # sido -> {YYYYMM: val}
+    for r in rows:
+        nm = (r.get("C2_NM") or "").strip()
+        if nm not in sido_set:
+            continue
+        prd = r.get("PRD_DE", "")
+        try:
+            v = float(r.get("DT", ""))
+        except ValueError:
+            continue
+        by_sido_month.setdefault(nm, {})[prd] = v
+
+    # 연도별 12월 값 (없으면 그 해 마지막 월)
+    years = sorted({int(p[:4]) for d in by_sido_month.values() for p in d})
+    index_year = {}
+    for s in ALL_SIDO:
+        months = by_sido_month.get(s, {})
+        row = []
+        for y in years:
+            ym_list = sorted([p for p in months if p.startswith(str(y))])
+            row.append(round(months[ym_list[-1]], 1) if ym_list else None)
+        index_year[s] = row
+
+    # 변화율: 최근값 vs 1년전 / 전체기간
+    change_1y, change_full = {}, {}
+    for s in ALL_SIDO:
+        row = [v for v in index_year[s] if v is not None]
+        if len(row) >= 2:
+            change_full[s] = round(((row[-1] - row[0]) / row[0]) * 100, 2)
+            if len(row) >= 2:
+                change_1y[s] = round(((row[-1] - row[-2]) / row[-2]) * 100, 2)
+        else:
+            change_full[s] = change_1y[s] = None
 
     out = {
         "years": years, "sido": ALL_SIDO,
-        "teachers": teachers, "new_hires": new_hires,
+        "index": index_year,
+        "change_1y": change_1y,
+        "change_full": change_full,
         "meta": {
-            "source": "추정치 — KESS 교육통계서비스 시도별 교원수 공개치(2024) base + 추세 모형",
-            "real": False,
-            "note": "절대치는 KESS 공개치를 base로 하나, 연도별 시계열은 모형 fit. "
-                    "정확한 시도×연도 행렬은 KOSIS Open API의 URL 호출 토큰이 필요해 미연동.",
+            "source": "KOSIS 한국부동산원 유형별 매매가격지수(종합) DT_30404_B012",
+            "table_id": "408/DT_30404_B012",
+            "base": rows[0].get("UNIT_NM", "") if rows else "",
+            "via": "KOSIS Open API",
+            "real": True,
+            "note": "지수 기준은 특정 시점=100. 절대 가격(원)이 아니라 상대적 추세 비교용.",
         },
     }
-    (OUT / "teacher.json").write_text(
+    (OUT / "housing.json").write_text(
         json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
     )
-    print(f"teacher.json: 17 sido x {len(years)} years (ESTIMATE - KESS-anchored)")
+    print(f"housing.json: 17 sido × {len(years)} years (REAL KOSIS 부동산원 지수)")
 
 
 def build_summary():
@@ -274,7 +304,7 @@ def build_summary():
         "data_sources": {
             "closure": {"real": True, "source": "학교알리미 통합본"},
             "population": {"real": True, "source": "KOSIS DT_1B040A3"} if pop_meta else None,
-            "teacher": {"real": False, "source": "KESS-anchored estimate"},
+            "listings": {"real": True, "source": "시도교육청 폐교재산 현황"},
         },
     }
     (OUT / "summary.json").write_text(
@@ -287,6 +317,6 @@ if __name__ == "__main__":
     build_closure_panel()
     build_geo()
     build_population_real()
-    build_teacher_estimate()
+    build_housing()
     build_summary()
     print(f"\nOUT: {OUT}")

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>폐교 매물 탐색 · 폐교 아틀라스</title>
+  <meta name="description" content="전국 시도교육청 폐교재산 통합 검색 — 활용현황·면적·주소·매각/대부가" />
+
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <script>window.DATA_BASE = '../assets/data';</script>
+  <style>
+    .lst-stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
+      gap: 12px; margin-bottom: 20px;
+    }
+    .lst-layout { display: grid; grid-template-columns: 360px 1fr; gap: 20px; }
+    @media (max-width: 1000px) { .lst-layout { grid-template-columns: 1fr; } }
+    #lst-map { width: 100%; height: 380px; border-radius: 12px; overflow: hidden;
+               background: linear-gradient(135deg, var(--bg-1), var(--bg-2)); }
+    .lst-filters { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
+    .lst-filters label { font-size: 11px; color: var(--text-dim); display:block; margin-bottom:5px;
+                         text-transform: uppercase; letter-spacing: 0.06em; }
+    .lst-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 14px; }
+    .lcard {
+      background: var(--bg-glass); border: 1px solid var(--line); border-radius: 14px;
+      padding: 16px; cursor: pointer; transition: all 0.2s; position: relative;
+    }
+    .lcard:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+    .lcard .lc-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; padding-right: 28px; }
+    .lcard .lc-loc { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; }
+    .lcard .lc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .lc-tag { font-size: 10.5px; padding: 2px 8px; border-radius: 99px; font-weight: 600; }
+    .lc-tag.sale  { background: rgba(255,107,157,0.14); color: #ff8db0; border:1px solid rgba(255,107,157,0.3); }
+    .lc-tag.rent  { background: rgba(255,209,102,0.14); color: var(--accent-3); border:1px solid rgba(255,209,102,0.3); }
+    .lc-tag.self  { background: rgba(94,234,212,0.12); color: var(--accent); border:1px solid rgba(94,234,212,0.3); }
+    .lc-tag.idle  { background: rgba(167,139,250,0.14); color: var(--accent-4); border:1px solid rgba(167,139,250,0.3); }
+    .lc-tag.etc   { background: rgba(255,255,255,0.05); color: var(--text-dim); border:1px solid var(--line); }
+    .lcard .lc-meta { font-size: 12px; color: var(--text-dim); line-height: 1.7; }
+    .lcard .lc-meta b { color: var(--text); font-weight: 600; }
+    .lc-fav { position: absolute; top: 14px; right: 14px; background: none; border: none;
+              cursor: pointer; font-size: 18px; color: var(--text-faint); transition: all 0.15s; }
+    .lc-fav:hover { transform: scale(1.2); }
+    .lc-fav.on { color: var(--accent-2); }
+    .lst-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+    .lst-count { font-size: 13px; color: var(--text-dim); }
+    .lst-count b { color: var(--accent); font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div id="loader"><div class="loader-ring"></div><div class="loader-text">매물 로딩 중</div></div>
+
+  <nav class="nav">
+    <div class="brand">학교가 <span>사라지는</span> 속도</div>
+    <div class="links">
+      <a href="../index.html">지도</a>
+      <a href="timeline.html">시계열</a>
+      <a href="compare.html">인구</a>
+      <a class="active" href="listings.html">매물</a>
+      <a href="forecast.html">예측</a>
+      <a href="3d.html">3D</a>
+      <a href="about.html">자료</a>
+    </div>
+    <div class="api-badge"><span class="dot"></span>시도교육청 폐교재산 실데이터</div>
+  </nav>
+
+  <section class="hero" style="padding-bottom:20px;">
+    <h1 style="font-size:clamp(28px,4vw,52px);">사라진 학교의 두 번째 인생</h1>
+    <p class="sub">
+      전국 17개 시도교육청이 공개한 폐교재산을 한곳에 모았습니다.
+      매각·대부 가능한 부지, 활용 중인 시설, 비어있는 학교를 시도·면적·활용현황으로 검색하세요.
+      귀촌·창업·체험시설을 찾는다면 출발점이 됩니다.
+    </p>
+  </section>
+
+  <main style="max-width:1480px; margin:0 auto; padding:0 32px 60px;">
+    <div class="lst-stats">
+      <div class="kpi"><div class="label">전체 폐교재산</div><div class="value"><span id="st-total">0</span><span class="unit">건</span></div><div class="delta">시도교육청 공개</div></div>
+      <div class="kpi"><div class="label">매각 관련</div><div class="value"><span id="st-sale">0</span><span class="unit">건</span></div><div class="delta">매각/매각예정</div></div>
+      <div class="kpi"><div class="label">대부(임대) 관련</div><div class="value"><span id="st-rent">0</span><span class="unit">건</span></div><div class="delta">임대 가능·진행</div></div>
+      <div class="kpi"><div class="label">미활용</div><div class="value"><span id="st-idle">0</span><span class="unit">건</span></div><div class="delta">비어있는 부지</div></div>
+    </div>
+
+    <div class="lst-layout">
+      <aside>
+        <section class="panel reveal">
+          <h2>지역으로 좁히기</h2>
+          <div id="lst-map"></div>
+          <div class="lst-filters">
+            <div>
+              <label>시도</label>
+              <select id="f-sido" class="search-input" style="padding-left:14px; background-image:none;"></select>
+            </div>
+            <div>
+              <label>활용현황</label>
+              <select id="f-status" class="search-input" style="padding-left:14px; background-image:none;">
+                <option value="">전체</option>
+                <option value="sale">매각 관련</option>
+                <option value="rent">대부(임대)</option>
+                <option value="self">자체활용</option>
+                <option value="idle">미활용</option>
+              </select>
+            </div>
+            <div>
+              <label>최소 대지면적 — <span id="f-area-val" style="color:var(--accent);">0㎡</span></label>
+              <input type="range" id="f-area" min="0" max="30000" step="500" value="0" style="width:100%; accent-color:var(--accent);" />
+            </div>
+            <div>
+              <label>검색 (학교명·주소)</label>
+              <input type="text" id="f-q" class="search-input" placeholder="예: 분교, 군산, 해변" />
+            </div>
+            <button class="btn" id="f-reset">필터 초기화</button>
+            <button class="btn" id="f-fav-only">관심 매물만 보기 <span id="fav-count">(0)</span></button>
+          </div>
+        </section>
+      </aside>
+
+      <section>
+        <div class="lst-toolbar">
+          <div class="lst-count"><b id="result-count">0</b>건 표시</div>
+          <span style="flex:1"></span>
+          <label style="font-size:12px;color:var(--text-dim);">정렬</label>
+          <select id="f-sort" class="search-input" style="width:auto; padding-left:14px; background-image:none;">
+            <option value="area_desc">면적 큰 순</option>
+            <option value="area_asc">면적 작은 순</option>
+            <option value="year_desc">최근 폐교 순</option>
+            <option value="year_asc">오래된 순</option>
+            <option value="name">이름순</option>
+          </select>
+          <button class="btn icon-download" id="dl-csv">결과 CSV</button>
+        </div>
+        <div class="lst-cards" id="lst-cards"></div>
+        <div id="lst-empty" style="display:none; text-align:center; padding:60px; color:var(--text-faint);">
+          조건에 맞는 매물이 없습니다. 필터를 완화해 보세요.
+        </div>
+      </section>
+    </div>
+
+    <section class="insights reveal" style="margin-top:24px;">
+      <span class="ai-label">활용 팁</span>
+      <strong>매각</strong>은 소유권 이전(영구), <strong>대부</strong>는 일정 기간 임대입니다.
+      <strong>미활용</strong> 부지가 보통 협의 여지가 큽니다. 실제 거래·임대는 각 시도교육청 담당 부서에 문의해야 하며,
+      이 페이지는 공개데이터를 모아 <strong>탐색</strong>을 돕는 용도입니다. 면적·주소·연락처는 원자료 기준이라 최신이 아닐 수 있어요.
+      <span class="citation">출처: 17개 시도교육청 폐교재산 현황 (공공데이터포털). 시도별 공시 양식·기준일 상이.</span>
+    </section>
+  </main>
+
+  <footer>
+    <div>출처: 시도교육청 폐교재산 현황 (공공데이터포털) · 데이터 기준일 시도별 상이</div>
+  </footer>
+
+  <!-- 상세 모달 -->
+  <div id="lst-modal" style="display:none;"></div>
+
+  <script src="../assets/js/data-loader.js"></script>
+  <script src="../assets/js/utils.js"></script>
+  <script src="../assets/js/listings.js"></script>
+</body>
+</html>

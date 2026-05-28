@@ -47,7 +47,6 @@ function buildSystemPrompt(focusSido) {
 
   const c = DATA.closure;
   const p = DATA.population || {};
-  const t = DATA.teacher || {};
 
   let context = `당신은 한국 학교 폐교 데이터 전문 분석가입니다. 사용자가 한국어로 묻습니다.
 간결하고 구체적으로 답하세요. 수치 인용 시 출처를 명시. 모르면 모른다고 답하세요.
@@ -57,7 +56,7 @@ function buildSystemPrompt(focusSido) {
 - 학교급: 초등 ${c.by_level.filter(r => r['학교급'] === '초').reduce((a,b)=>a+b['폐교수'],0)}교, 중 ${c.by_level.filter(r => r['학교급'] === '중').reduce((a,b)=>a+b['폐교수'],0)}교, 고 ${c.by_level.filter(r => r['학교급'] === '고').reduce((a,b)=>a+b['폐교수'],0)}교
 - 시도별 누적 (상위 5): ${[...c.sido].sort((a,b)=>c.totals[b]-c.totals[a]).slice(0,5).map(s=>`${s} ${c.totals[s]}교`).join(', ')}
 - 인구 데이터: KOSIS DT_1B040A3 주민등록인구 2016–2025 (실데이터)
-- 교원 데이터: KESS 추정치 (실데이터 아님 — 추세 모형 기반)`;
+- 폐교 매물: 시도교육청 폐교재산 공개데이터 (활용현황·면적·주소·일부 매각/대부가)`;
 
   if (focusSido && c.sido.includes(focusSido)) {
     const yearly = c.yearly[focusSido];

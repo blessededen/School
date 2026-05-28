@@ -149,12 +149,14 @@ function aiInsight(sido, opts = {}) {
     }
   }
 
-  // 교원 데이터
-  let teacherLine = '';
-  if (DATA.teacher) {
-    const hires = DATA.teacher.new_hires[sido] || [];
-    const lastHire = hires[hires.length - 1] || 0;
-    teacherLine = ` 2024년 신규 임용 추정치 <strong>${lastHire}</strong>명.`;
+  // 매물 데이터 (있으면)
+  let listingLine = '';
+  if (DATA.listings) {
+    const inSido = DATA.listings.records.filter(r => r.sido === sido);
+    if (inSido.length) {
+      const reusable = inSido.filter(r => /매각|대부|미활용/.test(r.usage_status || '')).length;
+      listingLine = ` 폐교재산 공개 ${inSido.length}건 중 활용·매각 가능 후보 약 ${reusable}건.`;
+    }
   }
 
   // 가속/둔화 해석
@@ -170,7 +172,7 @@ function aiInsight(sido, opts = {}) {
     <span class="ai-label">AI 분석</span>
     <strong>${sido}</strong>는 누적 폐교 <strong>${total}교</strong>로 전국 ${rank}위(전체의 ${nationalShare}%)입니다.
     가장 많이 닫은 해는 <strong>${peakYear}년 ${peakVal}교</strong>.
-    ${accelText}.${popLine}${teacherLine}
-    <span class="citation">출처: 학교알리미(폐교)·KOSIS DT_1B040A3(인구)·KESS 추정(교원). AI 인사이트는 패널 데이터 기반 룰베이스 생성.</span>
+    ${accelText}.${popLine}${listingLine}
+    <span class="citation">출처: 학교알리미(폐교)·KOSIS DT_1B040A3(인구)·시도교육청 폐교재산(매물). 룰베이스 자동 생성.</span>
   `;
 }

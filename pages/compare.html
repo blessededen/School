@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>인구·교원 비교 · 폐교 아틀라스</title>
+  <title>인구 비교 · 폐교 아틀라스</title>
 
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
@@ -20,7 +20,8 @@
     <div class="links">
       <a href="../index.html">지도</a>
       <a href="timeline.html">시계열</a>
-      <a class="active" href="compare.html">인구·교원</a>
+      <a class="active" href="compare.html">인구</a>
+      <a href="listings.html">매물</a>
       <a href="forecast.html">예측</a>
       <a href="3d.html">3D</a>
       <a href="about.html">자료</a>
@@ -31,8 +32,8 @@
   <section class="hero" style="padding-bottom:24px;">
     <h1 style="font-size:clamp(28px,4vw,52px);">학교는 사라지고,<br>사람은 어디로 가는가</h1>
     <p class="sub">
-      KOSIS 주민등록인구 실데이터와 KESS 교원 추정치를 폐교 시계열과 한 화면 위에 겹칩니다.
-      한 축은 사라지는 학교, 다른 축은 떠나는 사람과 들어오는 교사. 세 선이 어디서 어긋나는지가 메시지의 핵심입니다.
+      KOSIS 주민등록인구 실데이터를 폐교 시계열과 한 화면 위에 겹칩니다.
+      한 축은 사라지는 학교, 다른 축은 떠나는 사람. 두 선이 어디서 함께 꺾이는지가 메시지의 핵심입니다.
     </p>
   </section>
 
@@ -43,8 +44,8 @@
     </section>
 
     <section class="panel reveal" style="margin-bottom:20px;">
-      <h2>듀얼 시계열 — 폐교 vs 인구 vs 신규 임용
-        <span class="badge-source real" title="인구는 KOSIS 실데이터, 폐교는 학교알리미 실데이터">REAL + ESTIMATE</span>
+      <h2>듀얼 시계열 — 폐교 vs 인구
+        <span class="badge-source real" title="인구는 KOSIS 실데이터, 폐교는 학교알리미 실데이터">REAL DATA</span>
       </h2>
       <div class="panel-toolbar"></div>
       <div id="chart-dual" class="chart-host" style="height:560px;"></div>
@@ -64,11 +65,12 @@
       </section>
 
       <section class="panel reveal">
-        <h2>1만명당 누적 폐교
+        <h2>폐교 vs 집값 추세
           <span class="badge-source real">REAL</span>
         </h2>
         <p style="color:var(--text-dim);font-size:12px;margin-bottom:8px;">
-          시도 인구로 정규화한 폐교 밀도. 절대 수치로 가려진 농촌·도서 지역의 진짜 크기가 보임.
+          가로: 인구 1만명당 누적 폐교. 세로: 집값 지수 변화율(한국부동산원, 2021→2026).
+          "폐교 많은 곳은 집값도 떨어졌나"를 한 화면에서.
         </p>
         <div class="panel-toolbar"></div>
         <div id="chart-density" class="chart-host tall"></div>
