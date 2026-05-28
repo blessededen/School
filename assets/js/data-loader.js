@@ -24,7 +24,9 @@ async function loadAll() {
 async function loadListings() {
   if (DATA.listings) return DATA.listings;
   const base = window.DATA_BASE || 'assets/data';
-  DATA.listings = await fetch(`${base}/listings.json`).then(r => r.json());
+  const r = await fetch(`${base}/listings.json`);
+  if (!r.ok) throw new Error(`listings.json HTTP ${r.status}`);
+  DATA.listings = await r.json();
   return DATA.listings;
 }
 

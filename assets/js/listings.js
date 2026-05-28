@@ -32,11 +32,30 @@ function fmtPrice(won) {
 }
 
 async function init() {
-  await loadAll();
-  await loadListings();
-  hideLoader();
+  try {
+    await loadAll();
+    await loadListings();
+  } catch (e) {
+    console.error('데이터 로딩 실패:', e);
+    hideLoader();
+    document.getElementById('lst-cards').innerHTML =
+      `<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--text-faint);">
+        매물 데이터를 불러오지 못했습니다.<br><br>
+        <code style="color:var(--accent-2)">${escapeHtmlL(e.message)}</code><br><br>
+        로컬에서 <code>file://</code>로 열었다면 <code>python -m http.server</code>로 서버를 띄워 접속하거나,<br>
+        배포본이면 <code>assets/data/listings.json</code>이 푸시됐는지 확인하세요.
+      </div>`;
+    return;
+  } finally {
+    hideLoader();
+  }
   initReveal();
 
+  if (!DATA.listings || !DATA.listings.records) {
+    document.getElementById('lst-cards').innerHTML =
+      '<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--text-faint);">listings.json 형식 오류</div>';
+    return;
+  }
   LISTINGS = DATA.listings.records;
 
   // KPI
