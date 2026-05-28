@@ -320,8 +320,8 @@ function downloadResults() {
   const rows = FILTERED.map(r => ({
     학교명: r.school_name, 시도: r.sido, 시군구: r.sigungu || '',
     폐교연도: r.closure_year || '', 학교급: r.school_level || '',
-    활용현황: r.usage_status || '', 대지면적_㎡: r.land_area || '',
-    건물면적_㎡: r.building_area || '', 주소: r.jibun_address || r.road_address || '',
+    활용현황: r.usage_status || '', '대지면적_m2': r.land_area || '',
+    '건물면적_m2': r.building_area || '', 주소: r.jibun_address || r.road_address || '',
     매각가_원: r.sale_price_kwon || '', 대부료_원: r.rent_price_kwon || '',
     문의: r.contact || '',
   }));

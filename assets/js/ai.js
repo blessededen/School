@@ -66,7 +66,12 @@ async function askAI(userPrompt, focusSido) {
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: sys }] },
       contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-      generationConfig: { maxOutputTokens: 800, temperature: 0.4 },
+      generationConfig: {
+        maxOutputTokens: 2048,
+        temperature: 0.4,
+        // gemini-2.5-flash는 기본 thinking이 출력 토큰을 잠식 → 답변 잘림 방지 위해 thinking 끔
+        thinkingConfig: { thinkingBudget: 0 },
+      },
     }),
   });
 
@@ -89,8 +94,18 @@ async function askAI(userPrompt, focusSido) {
   }
 
   const j = await r.json();
-  const text = j.candidates?.[0]?.content?.parts?.map(p => p.text).join('') || '';
-  return text || '(응답이 비어있습니다. 질문을 바꿔보세요.)';
+  const cand = j.candidates?.[0];
+  const text = cand?.content?.parts?.map(p => p.text || '').join('') || '';
+  if (!text) {
+    // 차단/빈응답 원인 표시
+    const fr = cand?.finishReason || j.promptFeedback?.blockReason || '';
+    if (fr === 'SAFETY' || j.promptFeedback?.blockReason) return '(안전 필터로 응답이 차단되었습니다. 질문을 바꿔보세요.)';
+    return '(응답이 비어있습니다. 질문을 바꿔보세요.)';
+  }
+  if (cand?.finishReason === 'MAX_TOKENS') {
+    return text + '\n\n…(응답이 길어 잘렸습니다. 더 구체적으로 물어보면 완결된 답을 받을 수 있어요.)';
+  }
+  return text;
 }
 
 /* ── 키 설정 모달 ────────────────────────────────────── */
