@@ -3,13 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>폐교 매물 탐색 · 폐교 아틀라스</title>
+  <title>폐교 매물 탐색 · 새록터이음</title>
   <meta name="description" content="전국 시도교육청 폐교재산 통합 검색 — 활용현황·면적·주소·매각/대부가" />
 
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preconnect" href="https://unpkg.com" />
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="../assets/css/main.css" />
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="../assets/css/main.css?v=20260529a" />
   <script>window.DATA_BASE = '../assets/data';</script>
   <style>
     .lst-stats {
@@ -53,7 +55,7 @@
   <div id="loader"><div class="loader-ring"></div><div class="loader-text">매물 로딩 중</div></div>
 
   <nav class="nav">
-    <div class="brand">학교가 <span>사라지는</span> 속도</div>
+    <div class="brand">새록터<span>이음</span></div>
     <div class="links">
       <a href="../index.html">지도</a>
       <a href="timeline.html">시계열</a>
@@ -154,8 +156,8 @@
   <!-- 상세 모달 -->
   <div id="lst-modal" style="display:none;"></div>
 
-  <script src="../assets/js/data-loader.js"></script>
-  <script src="../assets/js/utils.js"></script>
-  <script src="../assets/js/listings.js"></script>
+  <script defer src="../assets/js/data-loader.js?v=20260529a"></script>
+  <script defer src="../assets/js/utils.js?v=20260529a"></script>
+  <script defer src="../assets/js/listings.js?v=20260529a"></script>
 </body>
 </html>

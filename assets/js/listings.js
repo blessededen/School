@@ -40,10 +40,8 @@ async function init() {
     hideLoader();
     document.getElementById('lst-cards').innerHTML =
       `<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--text-faint);">
-        매물 데이터를 불러오지 못했습니다.<br><br>
-        <code style="color:var(--accent-2)">${escapeHtmlL(e.message)}</code><br><br>
-        로컬에서 <code>file://</code>로 열었다면 <code>python -m http.server</code>로 서버를 띄워 접속하거나,<br>
-        배포본이면 <code>assets/data/listings.json</code>이 푸시됐는지 확인하세요.
+        매물 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.<br><br>
+        <code style="color:var(--accent-2)">${escapeHtmlL(e.message)}</code>
       </div>`;
     return;
   } finally {
